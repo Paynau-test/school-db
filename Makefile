@@ -142,5 +142,5 @@ help:
 	@echo ""
 	@echo "  Production (RDS):"
 	@echo "    make db-info         Show RDS credentials"
-	@echo "    make db-deploy       (use from school-api-node instead)"
+	@echo "    make db-deploy       Deploy migrations + SPs to production RDS"
 	@echo ""
