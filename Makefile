@@ -95,20 +95,8 @@ db-info:
 	echo ""
 
 db-deploy:
-	@echo "Deploying to production RDS (via Lambda)..."
-	@aws lambda invoke --function-name school-db-migrate \
-		--region us-east-1 \
-		--cli-read-timeout 120 \
-		/tmp/db-migrate-response.json > /dev/null 2>&1 && \
-	RESULT=$$(cat /tmp/db-migrate-response.json) && \
-	STATUS=$$(echo "$$RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('statusCode', 500))") && \
-	if [ "$$STATUS" = "200" ]; then \
-		echo "Production database updated successfully."; \
-	else \
-		echo "Migration failed:"; \
-		echo "$$RESULT" | python3 -m json.tool; \
-		exit 1; \
-	fi
+	@echo "Use 'make db-deploy' from school-api-node instead."
+	@echo "The migration Lambda lives in that stack (same VPC + DB credentials)."
 
 # ── Full destroy ────────────────────────────
 
@@ -142,5 +130,5 @@ help:
 	@echo ""
 	@echo "  Production (RDS):"
 	@echo "    make db-info         Show RDS credentials"
-	@echo "    make db-deploy       Deploy migrations + SPs to production RDS"
+	@echo "    make db-deploy       (use from school-api-node instead)"
 	@echo ""
