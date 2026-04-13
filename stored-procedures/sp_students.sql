@@ -98,7 +98,9 @@ BEGIN
     FROM students s
     INNER JOIN grades g ON s.grade_id = g.id
     WHERE
-        (p_term IS NULL OR CONCAT(s.first_name, ' ', s.last_name_father, ' ', IFNULL(s.last_name_mother, '')) LIKE CONCAT('%', p_term, '%'))
+        (p_term IS NULL OR p_term = '' OR
+            s.id = CAST(p_term AS UNSIGNED) OR
+            CONCAT(s.first_name, ' ', s.last_name_father, ' ', IFNULL(s.last_name_mother, '')) LIKE CONCAT('%', p_term, '%'))
         AND (p_status IS NULL OR s.status = p_status)
     ORDER BY s.last_name_father, s.last_name_mother, s.first_name
     LIMIT p_limit OFFSET p_offset;
