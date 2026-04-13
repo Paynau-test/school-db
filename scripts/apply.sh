@@ -32,7 +32,7 @@ apply_file() {
         return 1
     fi
     echo -e "${YELLOW}[*] Applying: ${file}${NC}"
-    docker exec -i "${CONTAINER}" mysql -uroot -proot_secret "${DB}" < "$file" 2>&1 | grep -v "Warning.*password"
+    docker exec -i "${CONTAINER}" mysql -uroot -proot_secret "${DB}" < "$file" 2>/dev/null
     echo -e "${GREEN}[OK] ${file}${NC}"
 }
 

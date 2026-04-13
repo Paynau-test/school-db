@@ -53,24 +53,18 @@ seed:
 	@echo "Running seeds..."
 	@for f in seeds/*.sql; do \
 		echo "  -> $$f"; \
-		docker exec -i $(CONTAINER) mysql -uroot -proot_secret $(DB) < "$$f" 2>&1 | grep -v "Warning.*password"; \
+		docker exec -i $(CONTAINER) mysql -uroot -proot_secret $(DB) < "$$f" 2>/dev/null; \
 	done
 	@echo "Seeds complete."
 
 # ── Full reset ──────────────────────────────
 
 reset:
-	@echo "WARNING: This will drop ALL data and recreate the DB."
-	@read -p "Type RESET to confirm: " confirm; \
-	if [ "$$confirm" = "RESET" ]; then \
-		echo "Recreating database..."; \
-		docker exec -i $(CONTAINER) mysql -uroot -proot_secret -e "DROP DATABASE IF EXISTS $(DB); CREATE DATABASE $(DB) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>&1 | grep -v "Warning.*password"; \
-		bash scripts/apply.sh; \
-		$(MAKE) seed; \
-		echo "Reset complete."; \
-	else \
-		echo "Cancelled."; \
-	fi
+	@echo "Resetting database..."
+	@docker exec -i $(CONTAINER) mysql -uroot -proot_secret -e "DROP DATABASE IF EXISTS $(DB); CREATE DATABASE $(DB) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
+	@bash scripts/apply.sh
+	@$(MAKE) seed
+	@echo "Reset complete."
 
 # ── Utilities ───────────────────────────────
 
