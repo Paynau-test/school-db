@@ -18,7 +18,7 @@ CONTAINER = school-db-mysql
 DB = school_db
 COMPOSE = docker compose
 
-.PHONY: up down watch apply seed reset shell logs status nuke help
+.PHONY: up down watch apply seed reset shell logs status nuke db-deploy db-info help
 
 # ── Start / Stop ────────────────────────────
 
@@ -77,6 +77,26 @@ logs:
 status:
 	@$(COMPOSE) ps
 
+# ── Production (RDS) ───────────────────────
+
+db-info:
+	@echo "Reading RDS credentials from AWS..."
+	@DB_HOST=$$(aws cloudformation describe-stacks --stack-name SchoolDatabase --region us-east-1 \
+		--query 'Stacks[0].Outputs[?OutputKey==`DbEndpoint`].OutputValue' --output text) && \
+	DB_SECRET=$$(aws secretsmanager get-secret-value --secret-id school-db-credentials --region us-east-1 \
+		--query SecretString --output text) && \
+	DB_USER=$$(echo "$$DB_SECRET" | python3 -c "import sys,json; print(json.load(sys.stdin)['username'])") && \
+	DB_PASS=$$(echo "$$DB_SECRET" | python3 -c "import sys,json; print(json.load(sys.stdin)['password'])") && \
+	echo "" && \
+	echo "Host:     $$DB_HOST" && \
+	echo "Database: school_db" && \
+	echo "User:     $$DB_USER" && \
+	echo "Password: $$DB_PASS" && \
+	echo ""
+
+db-deploy:
+	@echo "Use 'make db-deploy' from school-api-node instead (runs via Lambda inside VPC)."
+
 # ── Full destroy ────────────────────────────
 
 nuke:
@@ -95,14 +115,19 @@ help:
 	@echo ""
 	@echo "school-db commands:"
 	@echo ""
-	@echo "  make up          Start MySQL + phpMyAdmin"
-	@echo "  make down        Stop containers (data persists)"
-	@echo "  make watch       Hot reload for .sql files"
-	@echo "  make apply       Apply migrations + SPs"
-	@echo "  make seed        Run seed files"
-	@echo "  make reset       Drop DB and recreate everything"
-	@echo "  make shell       Interactive MySQL terminal"
-	@echo "  make logs        Stream logs in real time"
-	@echo "  make status      Show container status"
-	@echo "  make nuke        Destroy everything (containers + data)"
+	@echo "  Local (Docker):"
+	@echo "    make up              Start MySQL + phpMyAdmin"
+	@echo "    make down            Stop containers (data persists)"
+	@echo "    make watch           Hot reload for .sql files"
+	@echo "    make apply           Apply migrations + SPs"
+	@echo "    make seed            Run seed files"
+	@echo "    make reset           Drop DB and recreate everything"
+	@echo "    make shell           Interactive MySQL terminal"
+	@echo "    make logs            Stream logs in real time"
+	@echo "    make status          Show container status"
+	@echo "    make nuke            Destroy everything (containers + data)"
+	@echo ""
+	@echo "  Production (RDS):"
+	@echo "    make db-info         Show RDS credentials"
+	@echo "    make db-deploy       (use from school-api-node instead)"
 	@echo ""
